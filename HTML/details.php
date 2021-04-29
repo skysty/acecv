@@ -2,9 +2,9 @@
     include('connection.php');
     $tut = $_GET['tutid'];
     
-    $sql = "SELECT t.TutorID, t.firstname, t.lastname,  t.BirthDate, t.patronymic, t.work_start_date, t.phone,t.adress, t.mail, t.CafedraID, c.cafedraNameKZ, f.facultyNameKZ, t.job_title, t.photo  from tutors  
+    $sql = "SELECT t.TutorID, t.firstname, t.lastname,  t.BirthDate, t.patronymic, t.work_start_date, t.phone,t.adress, t.mail, t.CafedraID, c.cafedraNameKZ, f.facultyNameKZ, t.job_title, t.photo, t.ScientificDegreeID, s.NAMEKZ  from tutors  
     t JOIN cafedras  c ON c.cafedraID=t.CafedraID 
-    JOIN faculties f on c.FacultyID=f.FacultyID  Where t.TutorID ='$tut' and deleted=0 ";
+    JOIN faculties f on c.FacultyID=f.FacultyID  Join scientificdegree s On  s.ID=t.ScientificDegreeID Where t.TutorID ='$tut' and deleted=0 ";
     $result = mysqli_query($conn, $sql) or die(mysqli_error());
     $row = mysqli_fetch_array($result);
 ?>
@@ -46,7 +46,11 @@
 
         <!-- THEME STYLES -->
         <link href="css/layout.css" rel="stylesheet" type="text/css"/>
-
+        <style>
+         .table{
+             font-size:11px;
+         }
+        </style>
         <!-- Favicon -->
         <link rel="shortcut icon" href="favicon.ico"/>
     </head>
@@ -102,15 +106,16 @@
                     <div class="col-sm-6 sm-margin-b-60">
                         <div class="margin-b-30">
                             <h1 class="promo-block-title"><?php echo $row['firstname']?> <br/> <?php echo $row['lastname']?><br/> <?php echo $row['patronymic']?></h1>
-                            <p class="promo-block-text"><?php echo $row['job_title']?></p>
+                            <p class="promo-block-text"><?php  $job=$row['job_title'];
+                                                                echo  ucfirst(strtolower($job)); ?></p>
                         </div>
-                        <ul class="list-inline">
+                        <!--<ul class="list-inline">
                             <li><a href="#" class="social-icons"><i class="icon-social-facebook"></i></a></li>
                             <li><a href="#" class="social-icons"><i class="icon-social-twitter"></i></a></li>
                             <li><a href="#" class="social-icons"><i class="icon-social-dribbble"></i></a></li>
                             <li><a href="#" class="social-icons"><i class="icon-social-behance"></i></a></li>
                             <li><a href="#" class="social-icons"><i class="icon-social-linkedin"></i></a></li>
-                        </ul>
+                        </ul>-->
                     </div>
                     <div class="col-sm-6">
                         <div class="promo-block-img-wrap">
@@ -129,22 +134,95 @@
             <div class="container content-lg"> 
                 <div class="row">
                     <div class="col-sm-5 sm-margin-b-60">
-                        <img class="full-width img-responsive" src="img/500x700/01.jpg" alt="Image">
+                        <img class="full-width img-responsive" src="img/500x700/01.jpg" alt="Image" width="350" height="475">
                     </div>
                     <div class="col-sm-7">
                         <div class="section-seperator margin-b-50">
                             <div class="margin-b-50">
                                 <div class="margin-b-30">
                                     <h2>Қысқаша мәлімет</h2>
-                                    <p>I'm Alisa Portman, orem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                                    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-                                </div>
+                                    <p>Ғылыми дәрежесі: <?php  $degree=$row['ScientificDegreeID']; 
+                                              switch($degree){
+                                                  case 2:
+                                                    echo $row['NAMEKZ'];
+                                                    break;
+                                                  case 3:
+                                                    echo $row['NAMEKZ'];
+                                                    break;
+                                                  case 4:
+                                                    echo $row['NAMEKZ'];
+                                                    break;
+                                                  case 5:
+                                                    echo $row['NAMEKZ'];
+                                                    break;
+                                                  default:
+                                                    echo 'Ғылыми дәрежесі жоқ';            
+                                                }
+                                          ?></p>
+                                          <p>Факультет: <?php echo $row['facultyNameKZ']?></p>
+                                          <p>Кафедра: <?php echo $row['cafedraNameKZ']?></p>
+
+<?php
+    $sql1 = "SELECT  t.TutorID,
+    f.facultyNameRU, s.NameRU , tp.theme,
+    tp.plot, tp.edition, 
+    tp.additional, tp.pubdate , 
+    pt.nameru, pl.nameru,
+    tp.coauthor , cs.nameru,
+    cc.nameru , c1.nameru , tp.edition_year , 
+    tp.edition_pages , tp.edition_number   
+  FROM tutors t
+    JOIN tutorpubs tp ON t.TutorID = tp.TutorID
+   JOIN cafedras c ON t.CafedraID = c.cafedraID
+   JOIN faculties f ON c.FacultyID = f.FacultyId
+   JOIN sciencefields s ON s.Id = tp.sciencefieldID
+   JOIN center_countries cc ON tp.countryID= cc.id
+   JOIN publication_type pt ON tp.publication_type = pt.id
+   JOIN cities c1 ON tp.cityID = c1.id
+   JOIN publication_level pl ON tp.publication_level = pl.id
+   JOIN center_studylanguages cs ON tp.langID = cs.id
+   WHERE t.deleted = 0 AND t.TutorID ='$tut' ";
+   $result1 = mysqli_query($conn, $sql1) or die(mysqli_error());
+?>
+
+  <h3>Еңбектері</h3>
+  <p></p>                                                                                      
+  <div class="table-responsive">          
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Ғылым саласы</th>
+        <th>Басылым</th>
+        <th>Шығарылым атауы</th>
+        <th>Жарияланған күні</th>
+        <th>Сыртқы авторлар, аты-жөні</th>
+        <th>Басылымдағы бет нөмірлері</th>
+      </tr>
+    </thead>
+    
+    <?php
+    $i=0;
+     if(mysqli_num_rows($result1) > 0){
+    while($row1 = mysqli_fetch_array($result1)){
+        $i++;
+        echo "<tbody><tr><td>".$i."</td><td>".$row1['NameRU']."</td><td>".$row1['theme']."</td><td>".$row1['edition']."</td><td>".$row1['pubdate']."</td><td>".$row1['coauthor']."</td><td>".$row1['edition_pages']."</td></tr></tbody>";
+
+    }
+ } else{
+        echo "<h4>Жоқ</h4>";
+    }
+    
+?>
+  </table>
+  </div>
+                            </div>
                                 
                             </div>
                         </div>
 
-                        <h2>My Skills</h2>
-                        <!-- Progress Box -->
+                        
+                        <!-- Progress Box 
                         <div class="progress-box">
                             <h5>Adobe Illustrator <span class="color-heading pull-right">87%</span></h5>
                             <div class="progress">
@@ -163,7 +241,7 @@
                                 <div class="progress-bar bg-color-base" role="progressbar" data-width="77"></div>
                             </div>
                         </div>
-                        <!-- End Progress Box -->
+                         End Progress Box -->
                     </div>
                 </div>
                 <!--// end row -->
